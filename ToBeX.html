@@ -267,15 +267,15 @@ function mouseup(x,y,a){//a は　down/start (0) かmove(1)かup(2)か。
 var h = (widorhei / 256)
 x /= h
 y /= h
-if (mv == 0){//初動か判定
 var a = 70
 if (x < 200){
+	mous = 1;mv = 0;xx = 0;yy = 0
 }else if(x > right - 100 && chg >0){
 chg =0;
 shoot();
 ch = 0;
 }
-}
+
 
 }
 if (ch > 100){
@@ -295,7 +295,7 @@ tp = 100;
 if (playing == true){
 window.addEventListener('touchstart' , () => {mous =  1;var touchObject = event.changedTouches[0] ;var touchX = touchObject.pageX ;var touchY = touchObject.pageY ;mouse(touchX,touchY);aud.muted = false})
 window.addEventListener('touchmove' , () => {mous = 1; var touchObject = event.changedTouches[0] ;var touchX = touchObject.pageX ;var touchY = touchObject.pageY ;mouse(touchX,touchY);;aud.muted = false})
-window.addEventListener('touchend', () => {mouseup();mous = 1;mv = 0;xx = 0;yy = 0})
+window.addEventListener('touchend', () => {mouseup();})
 
 
 window.addEventListener('keydown', (event) => {
