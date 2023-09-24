@@ -176,6 +176,7 @@ nt.y = y;
 nt.xx = xx;
 nt.yy = yy;
 t.push(nt);
+nt = new Object();s
 }
 function gmover(){
 
@@ -207,7 +208,8 @@ localStorage.setItem('score', score);
 
 var te = -1//敵は誰
 var tey = 128//敵y
-var tehp = 100//敵hp
+var tehp = 2000//敵hp
+var temaxhp = 2000//敵maxhp
 var xxx = 0
 var yyy = 0//キー操作系
 var hp = 100
@@ -215,6 +217,8 @@ var hp = 100
 var tp = 100//攻撃ポイント
 var ch = 0//チャージ
 var chg = 0//チャージ中?0==no,1==yes
+
+var ri = 60//スマホ的横長画面だと60、PCくらいの横長だと5
 function main() {//メインるーーーーーーーーーーーーーーーーーーーーーーーぷ
 //タイマー系
 
@@ -254,7 +258,8 @@ if (x < 60){xx = -5}
 if (x > 100){xx = 5}
 if (y < 90){yy = -5}
 if (y > 150){yy = 5}
-}else if(x > right - 100){
+}
+if(x > right - 100){
 chg = 1
 
 }
@@ -268,14 +273,13 @@ var h = (widorhei / 256)
 x /= h
 y /= h
 var a = 70
-if (x < 200){
-	mous = 1;mv = 0;xx = 0;yy = 0
+if (x < 300){
+mous = 1;mv = 0;xx = 0;yy = 0
 }else if( chg >0){
 chg =0;
 shoot();
 ch = 0;
 }
-
 
 }
 if (ch > 100){
@@ -295,7 +299,7 @@ tp = 100;
 if (playing == true){
 window.addEventListener('touchstart' , () => {mous =  1;var touchObject = event.changedTouches[0] ;var touchX = touchObject.pageX ;var touchY = touchObject.pageY ;mouse(touchX,touchY);aud.muted = false})
 window.addEventListener('touchmove' , () => {mous = 1; var touchObject = event.changedTouches[0] ;var touchX = touchObject.pageX ;var touchY = touchObject.pageY ;mouse(touchX,touchY);;aud.muted = false})
-window.addEventListener('touchend', () => {mouseup();})
+window.addEventListener('touchend', () => {var touchObject = event.changedTouches[0] ;var touchX = touchObject.pageX ;var touchY = touchObject.pageY ;mouseup(touchX,touchY);})
 
 
 window.addEventListener('keydown', (event) => {
@@ -337,23 +341,49 @@ var ss = score / 20
 if (ss > 50){
 ss = 55
 }
-
+var hpp = tehp/temaxhp
 if (te == 0){
-if ((time / 7) % 7 == 0){
-tt(4,right,Math.random() * 256,-10,0)
+if (hpp > 0.9){
+	if ((time / 7) % 7 == 0){
+	tt(4,right,Math.random() * 256,-10,0)
+	}
+}else if (hpp > 0.4){
+	tey = 128 + Math.sin(time / 30) * 100
+	if ((time /10) % 10 == 0){
+	var ay = 50 + Math.trunc(time / 10)%3 * 80
+	tt(4,right,230,-10,Math.random() * -3)
+	}
+	if ((time /10) % 10 == 5){
+	var ay = 50 + Math.trunc(time / 10)%3 * 80
+	tt(4,right+50,30,-10,Math.random() * 3)
+	}
+}else if(hpp > 0){
+
+	tey = 128 + Math.sin(time / 20) * 100
+	if ((time / 7) % 7 == 0){
+	tt(4,right,Math.random() * 256,-20,0)
+	}
 }
 }
 
 
 if (te >= 0){
-ctx.drawImage(img3[te],right - 60 - img3[te].width,tey-img3[te].height/2,img3[te].width,img3[te].height)
+ctx.drawImage(img3[te],right - ri - img3[te].width,tey-img3[te].height/2,img3[te].width,img3[te].height)
+
+ctx.beginPath();ctx.lineWidth = 13;ctx.moveTo(right-ri-132,tey+60);ctx.lineTo(right-ri-28,tey+60);ctx.strokeStyle = '#400';ctx.stroke();ctx.closePath();
+ctx.beginPath();ctx.lineWidth = 10;ctx.moveTo(right-ri-130,tey+60);ctx.lineTo(right-ri-30,tey+60);ctx.strokeStyle = 'Red';ctx.stroke();ctx.closePath();
+if (tehp > 0){
+ctx.beginPath();ctx.moveTo(right-ri-130,tey+60);ctx.lineTo(right-ri-130+100*(tehp/temaxhp),tey+60);ctx.strokeStyle = 'lime';ctx.stroke();ctx.closePath();
+}
+
 aud.muted = false
-if (px > right - img3[te].width - 70 && py > tey-30 && py < tey + 30){hp -= 10
+if (px > right - img3[te].width - ri - 10 && py > tey-30 && py < tey + 30){hp -= 10
 }
 }else{}
 
 
-for (i = 0;i < t.length - 1;i += 1){
+for (i = 0;i < t.length - 1;i += 1){//teki
+if (i < t.length){ 
 var im = imgs[t[i].s]
 var w = im.width
 var h = im.height
@@ -361,53 +391,72 @@ ctx.drawImage(imgs[t[i].s],t[i].x-w / 2,t[i].y-h / 2,w,h)
 
 t[i].x += t[i].xx
 t[i].y += t[i].yy
-
 if (px > t[i].x-w/2 && px < t[i].x+w/2 && py>t[i].y-h/2 && py < t[i].y+h/2){
 var d = 1
 if (t[i].s == 0){d = 2}
 if (t[i].s == 1){d = 5}
 if (t[i].s == 2){d = 3}
-
+if (t[i].s == 4){d = 4;
+}
 hp -= d
 }
 
+if (t[i].x < -100 || t[i].x > 10000 || t[i].y **2 > 1000000){
+t.splice(i,1);
+i-=1
+}
+}
 }
 
 
-for (i = 0;i < s.length;i += 1){
+for (i = 0;i < s.length;i += 1){//tama
 if (i < s.length){ 
-ctx.beginPath();
-ctx.fillStyle = 'rgba(' + [255 , 255 , 255 , 0.8] + ')';
-ctx.arc(s[i].x,s[i].y,s[i].p,s[i].p,0,360,360);
-ctx.fill();
-ctx.font = (10 + Math.trunc(s[i].p)) + 'px Pixel';
-ctx.fillStyle = '#88f';
-ctx.fillText('#',s[i].x - (10 + Math.trunc(s[i].p)) /3,s[i].y +  (10 + Math.trunc(s[i].p)) / 3)
-ctx.closePath();
+	ctx.beginPath();
+	ctx.fillStyle = 'rgba(' + [255 , 255 , 255 , 0.8] + ')';
+	ctx.arc(s[i].x,s[i].y,s[i].p,s[i].p,0,360,360);
+	ctx.fill();
+	ctx.font = (10 + Math.trunc(s[i].p)) + 'px Pixel';
+	ctx.fillStyle = '#88f';
+	ctx.fillText('#',s[i].x - (10 + Math.trunc(s[i].p)) /3,s[i].y +  (10 + Math.trunc(s[i].p)) / 3)
+	ctx.closePath();
 
-s[i].x += s[i].xx;                     
+	s[i].x += s[i].xx;                     
 
-for (j = 0;j < t.length;j += 1){
+	for (j = 0;j < t.length;j += 1){
+		if (i < s.length){ 
+			if ((t[j].x - s[i].x)**2+(t[j].y-s[i].y)**2 < (s[i].p) ** 2 + ((imgs[t[j].s].width+imgs[t[j].s].height)/2)**1.5){
+			t[j].x += 50 + s[i].p
+			//t[j].xx /= 2
+				if (s[i].p > 50){
+					if (t[j].y > 128){
+					t[j].yy = 5
+					}
+					if (t[j].y < 128){
+					t[j].yy = -5
+					}
+				}
+				s.splice(i,1);
+			}
+		}
+
+
+	}
+}
 if (i < s.length){ 
-if ((t[j].x - s[i].x)**2+(t[j].y-s[i].y)**2 < (s[i].p) ** 2 + ((imgs[t[j].s].width+imgs[t[j].s].height)/2)**1.5){
-t[j].x += 50 + s[i].p
-//t[j].xx /= 2
-if (s[i].p > 50){
-if (t[j].y > s[i].y){
-t[j].yy = 5
+	if (s[i].x < -100 || s[i].x > 10000 || s[i].y **2 > 1000000){
+	s.splice(i,1);
+	}
 }
-if (t[j].y < s[i].y){
-t[j].yy = -5
-}
-}
+
+if (i < s.length){ 
+if (te >= 0){
+if (s[i].x > right - img3[te].width - ri - 10 && s[i].y > tey-img3[te].height/1.9 && s[i].y < tey +img3[te].height/1.9){
+tehp -= s[i].p
 s.splice(i,1);
 }
 }
 }
 }
-}
-
-
 px += xx
 py += yy
 
@@ -422,7 +471,7 @@ if (py > 256-32){py =256 - 32}
 ctx.drawImage(img2,px -32,py-32,65,65)
 
 if (window.innerWidth > window.innerHeight * 1.9){
-
+ri = 60;
 ctx.beginPath();ctx.rect(50, 40,40, 160);ctx.strokeStyle = 'deepskyblue';ctx.lineWidth = 4;ctx.stroke();
 
 ctx.rect(10, 100,120, 40);ctx.strokeStyle = 'deepskyblue';ctx.lineWidth = 4;ctx.stroke();ctx.closePath();
@@ -442,7 +491,7 @@ ctx.fillText(`h`,right - tl,105)
 ctx.fillText(`o`,right - tl,125)
 ctx.fillText(`o`,right - tl,145)
 ctx.fillText(`t`,right - tl,165)
-}
+}else{ri = 10;}
 
 ctx.beginPath();ctx.lineWidth = 13;ctx.moveTo(10,10);ctx.lineTo(110,10);ctx.strokeStyle = 'Red';ctx.stroke();ctx.closePath();
 if (hp > 0){
@@ -490,17 +539,22 @@ var iimg = new Image()
 iimg.src = 'title.png'
 
 addEventListener('load',() => {
+
+var iimg = new Image()
+iimg.src = 'title.png'
 if (window.innerWidth > window.innerHeight){
 ctx.drawImage(iimg,right / 2 - 128,0,256,256)
-}else{ctx.drawImage(iimg,0,0,256,256)}
-ctx.font = '25px Pixel'
+}else{
+ctx.drawImage(iimg,0,0,256,256)}
+
+ctx.font = '20px Pixel'
 ctx.fillStyle = '#f0f';
 ctx.fillText('横画面にしてちょーだい',2,bottom - 100)
 ctx.fillText('Play with landscape screen.',2,bottom - 70)
-ctx.fillText('Tap to start.(Or press key)',2,bottom - 40)
-var scr = parseInt(localStorage.getItem('score'));
+ctx.fillText('Tap to start.(or Press Key)',2,bottom - 40)
+var scr = localStorage.getItem('score')
 if (scr > 0){
-ctx.fillText('High Score:' + scr,2,bottom - 10)
+ctx.fillText('HighScore:' + scr,2,bottom - 10)
 }
 });
 // スクロールを禁止にする関数
